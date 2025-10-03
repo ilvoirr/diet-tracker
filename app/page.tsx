@@ -24,12 +24,20 @@ const parseYYYYMMDD = (dateString: string): Date => {
 // --- MOBILE CHART COMPONENT ---
 const MobileChartCard = ({ 
   chartRef, 
-  filteredData 
+  filteredData,
+  onMouseEnter,
+  onMouseLeave
 }: { 
   chartRef: React.RefObject<HTMLCanvasElement | null>; 
   filteredData: DiaryEntry[];
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
 }) => (
-  <div className="bg-white border border-zinc-200 rounded-xl shadow-sm">
+  <div 
+    className="bg-white border border-zinc-200 rounded-xl shadow-sm"
+    onMouseEnter={onMouseEnter}
+    onMouseLeave={onMouseLeave}
+  >
     <div className="h-[21rem] w-full p-3">
       {filteredData.length > 0 ? (
         <canvas ref={chartRef}></canvas>
@@ -45,12 +53,20 @@ const MobileChartCard = ({
 // --- DESKTOP CHART COMPONENT ---
 const DesktopChartCard = ({ 
   chartRef, 
-  filteredData 
+  filteredData,
+  onMouseEnter,
+  onMouseLeave
 }: { 
   chartRef: React.RefObject<HTMLCanvasElement | null>; 
   filteredData: DiaryEntry[];
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
 }) => (
-  <div className="lg:col-span-2 bg-white border border-zinc-200 rounded-xl shadow-sm">
+  <div 
+    className="lg:col-span-2 bg-white border border-zinc-200 rounded-xl shadow-sm"
+    onMouseEnter={onMouseEnter}
+    onMouseLeave={onMouseLeave}
+  >
     <div className="h-[30rem] w-full p-4">
       {filteredData.length > 0 ? (
         <canvas ref={chartRef}></canvas>
@@ -449,6 +465,7 @@ export default function WeightTrackerPage() {
   const [yAxisRange, setYAxisRange] = useState<{ min: number; max: number } | null>(null);
   const [caloriesConsumed, setCaloriesConsumed] = useState<string>('');
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isChartHovered, setIsChartHovered] = useState<boolean>(false);
   
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<Chart | null>(null);
@@ -534,14 +551,34 @@ export default function WeightTrackerPage() {
       y: entry.weight 
     }));
     
-    const pointColors = filteredData.map((_, index) => 
-      selectedIndices.includes(index) ? '#ef4444' : '#18181b'
-    );
     const normalRadius = isMobile ? 3 : 5;
     const selectedRadius = isMobile ? 6 : 8;
     const pointRadii = filteredData.map((_, index) => 
       selectedIndices.includes(index) ? selectedRadius : normalRadius
     );
+    
+    // For mobile: always show points. For desktop: use hover logic
+    const pointColors = filteredData.map((_, index) => {
+      if (isMobile) {
+        // Mobile: always visible
+        return selectedIndices.includes(index) ? '#ef4444' : '#18181b';
+      } else {
+        // Desktop: transparent when not hovered
+        if (!isChartHovered) return 'transparent';
+        return selectedIndices.includes(index) ? '#ef4444' : '#18181b';
+      }
+    });
+    
+    const pointBorderColors = filteredData.map((_, index) => {
+      if (isMobile) {
+        // Mobile: always visible
+        return '#ffffff';
+      } else {
+        // Desktop: transparent when not hovered
+        if (!isChartHovered) return 'transparent';
+        return '#ffffff';
+      }
+    });
 
     const gradient = ctx.createLinearGradient(0, 0, 0, 500);
     gradient.addColorStop(0, 'rgba(24, 24, 27, 0.1)');
@@ -551,14 +588,15 @@ export default function WeightTrackerPage() {
       const dataset = chartInstance.current.data.datasets[0] as {
         data: typeof chartData;
         pointBackgroundColor: string | string[];
+        pointBorderColor: string | string[];
         pointRadius: number | number[];
       };
       
       dataset.data = chartData;
       dataset.pointBackgroundColor = pointColors;
+      dataset.pointBorderColor = pointBorderColors;
       dataset.pointRadius = pointRadii;
       
-      // Safe access to scales with type guards
       if (chartInstance.current.options.scales?.x?.ticks) {
         chartInstance.current.options.scales.x.ticks.callback = function(value) {
           const date = new Date(value as number);
@@ -572,7 +610,7 @@ export default function WeightTrackerPage() {
         };
       }
       
-      chartInstance.current.update('none');
+      chartInstance.current.update('active');
       return;
     }
 
@@ -588,10 +626,11 @@ export default function WeightTrackerPage() {
           tension: 0.4,
           borderWidth: 2.5,
           pointBackgroundColor: pointColors,
-          pointBorderColor: '#ffffff',
+          pointBorderColor: pointBorderColors,
           pointBorderWidth: 2,
           pointRadius: pointRadii,
-          pointHoverRadius: isMobile ? 7 : 8,
+          pointHoverRadius: isMobile ? pointRadii : 5,
+          pointHitRadius: isMobile ? 8 : 10,
         }]
       },
       options: {
@@ -676,24 +715,46 @@ export default function WeightTrackerPage() {
   useEffect(() => {
     if (!chartInstance.current || filteredData.length === 0) return;
     
-    const pointColors = filteredData.map((_, index) => 
-      selectedIndices.includes(index) ? '#ef4444' : '#18181b'
-    );
-    const normalRadius = isMobile ? 3 : 5;
+    const normalRadius = isMobile ? 4 : 5;
     const selectedRadius = isMobile ? 6 : 8;
     const pointRadii = filteredData.map((_, index) => 
       selectedIndices.includes(index) ? selectedRadius : normalRadius
     );
     
+    // For mobile: always show points. For desktop: use hover logic
+    const pointColors = filteredData.map((_, index) => {
+      if (isMobile) {
+        // Mobile: always visible
+        return selectedIndices.includes(index) ? '#ef4444' : '#18181b';
+      } else {
+        // Desktop: transparent when not hovered
+        if (!isChartHovered) return 'transparent';
+        return selectedIndices.includes(index) ? '#ef4444' : '#18181b';
+      }
+    });
+    
+    const pointBorderColors = filteredData.map((_, index) => {
+      if (isMobile) {
+        // Mobile: always visible
+        return '#ffffff';
+      } else {
+        // Desktop: transparent when not hovered
+        if (!isChartHovered) return 'transparent';
+        return '#ffffff';
+      }
+    });
+    
     const dataset = chartInstance.current.data.datasets[0] as {
       pointBackgroundColor: string | string[];
+      pointBorderColor: string | string[];
       pointRadius: number | number[];
     };
     
     dataset.pointBackgroundColor = pointColors;
+    dataset.pointBorderColor = pointBorderColors;
     dataset.pointRadius = pointRadii;
-    chartInstance.current.update('none');
-  }, [selectedIndices, filteredData, isMobile]);
+    chartInstance.current.update('active');
+  }, [selectedIndices, filteredData, isMobile, isChartHovered]);
 
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -830,7 +891,12 @@ export default function WeightTrackerPage() {
               
               {/* Vertical Stack of Cards */}
               <div className="space-y-4">
-                <MobileChartCard chartRef={chartRef} filteredData={filteredData} />
+                <MobileChartCard 
+                  chartRef={chartRef} 
+                  filteredData={filteredData}
+                  onMouseEnter={() => setIsChartHovered(true)}
+                  onMouseLeave={() => setIsChartHovered(false)}
+                />
                 <MobileAnalysisCard selectedIndices={selectedIndices} filteredData={filteredData} />
                 <MobileTDEECard 
                   selectedIndices={selectedIndices} 
@@ -893,7 +959,12 @@ export default function WeightTrackerPage() {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <DesktopChartCard chartRef={chartRef} filteredData={filteredData} />
+              <DesktopChartCard 
+                chartRef={chartRef} 
+                filteredData={filteredData}
+                onMouseEnter={() => setIsChartHovered(true)}
+                onMouseLeave={() => setIsChartHovered(false)}
+              />
               <DesktopAnalysisCard selectedIndices={selectedIndices} filteredData={filteredData} />
               <DesktopTDEECard 
                 selectedIndices={selectedIndices} 
