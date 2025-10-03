@@ -548,12 +548,15 @@ export default function WeightTrackerPage() {
     gradient.addColorStop(1, 'rgba(24, 24, 27, 0)');
 
     if (chartInstance.current) {
-      const dataset = chartInstance.current.data.datasets[0];
-      if (dataset) {
-        dataset.data = chartData;
-        dataset.pointBackgroundColor = pointColors;
-        dataset.pointRadius = pointRadii;
-      }
+      const dataset = chartInstance.current.data.datasets[0] as {
+        data: typeof chartData;
+        pointBackgroundColor: string | string[];
+        pointRadius: number | number[];
+      };
+      
+      dataset.data = chartData;
+      dataset.pointBackgroundColor = pointColors;
+      dataset.pointRadius = pointRadii;
       
       // Safe access to scales with type guards
       if (chartInstance.current.options.scales?.x?.ticks) {
@@ -682,11 +685,13 @@ export default function WeightTrackerPage() {
       selectedIndices.includes(index) ? selectedRadius : normalRadius
     );
     
-    const dataset = chartInstance.current.data.datasets[0];
-    if (dataset) {
-      dataset.pointBackgroundColor = pointColors;
-      dataset.pointRadius = pointRadii;
-    }
+    const dataset = chartInstance.current.data.datasets[0] as {
+      pointBackgroundColor: string | string[];
+      pointRadius: number | number[];
+    };
+    
+    dataset.pointBackgroundColor = pointColors;
+    dataset.pointRadius = pointRadii;
     chartInstance.current.update('none');
   }, [selectedIndices, filteredData, isMobile]);
 
@@ -721,11 +726,13 @@ export default function WeightTrackerPage() {
       db.exec({
         sql: 'SELECT date, weight FROM diary ORDER BY date ASC',
         rowMode: 'object',
-        callback: (row: { date: string | number; weight: string | number }) => {
-          results.push({
-            date: row.date.toString(),
-            weight: parseFloat(row.weight.toString()),
-          });
+        callback: (row) => {
+          if (row && typeof row === 'object' && 'date' in row && 'weight' in row) {
+            results.push({
+              date: String(row.date),
+              weight: parseFloat(String(row.weight)),
+            });
+          }
         },
       });
       db.close();
