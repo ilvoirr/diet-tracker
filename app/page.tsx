@@ -1,13 +1,10 @@
 'use client';
 
-
 import { useEffect, useRef, useState, ChangeEvent } from 'react';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 
-
 Chart.register(...registerables);
-
 
 // --- TYPE DEFINITIONS ---
 interface DiaryEntry {
@@ -15,7 +12,6 @@ interface DiaryEntry {
   weight: number;
 }
 type TimePeriod = 'all' | '1m' | '3m' | '1y';
-
 
 // --- HELPER FUNCTIONS ---
 const parseYYYYMMDD = (dateString: string): Date => {
@@ -25,13 +21,12 @@ const parseYYYYMMDD = (dateString: string): Date => {
   return new Date(year, month, day);
 };
 
-
 // --- MOBILE CHART COMPONENT ---
 const MobileChartCard = ({ 
   chartRef, 
   filteredData 
 }: { 
-  chartRef: React.RefObject<HTMLCanvasElement>; 
+  chartRef: React.RefObject<HTMLCanvasElement | null>; 
   filteredData: DiaryEntry[];
 }) => (
   <div className="bg-white border border-zinc-200 rounded-xl shadow-sm">
@@ -47,13 +42,12 @@ const MobileChartCard = ({
   </div>
 );
 
-
 // --- DESKTOP CHART COMPONENT ---
 const DesktopChartCard = ({ 
   chartRef, 
   filteredData 
 }: { 
-  chartRef: React.RefObject<HTMLCanvasElement>; 
+  chartRef: React.RefObject<HTMLCanvasElement | null>; 
   filteredData: DiaryEntry[];
 }) => (
   <div className="lg:col-span-2 bg-white border border-zinc-200 rounded-xl shadow-sm">
@@ -68,7 +62,6 @@ const DesktopChartCard = ({
     </div>
   </div>
 );
-
 
 // --- MOBILE ANALYSIS CARD ---
 const MobileAnalysisCard = ({ 
@@ -97,7 +90,6 @@ const MobileAnalysisCard = ({
     );
   }
 
-
   const [idx1, idx2] = selectedIndices;
   const entry1 = filteredData[idx1];
   const entry2 = filteredData[idx2];
@@ -109,13 +101,11 @@ const MobileAnalysisCard = ({
   const ratePerWeek = (weightDiff / daysDiff) * 7;
   const isLoss = ratePerWeek < 0;
 
-
   const formatDate = (date: Date) => date.toLocaleDateString('en-US', { 
     month: 'short', 
     day: 'numeric', 
     year: 'numeric' 
   });
-
 
   return (
     <div className="bg-white border border-zinc-200 rounded-xl shadow-sm p-5 min-h-[280px]">
@@ -142,7 +132,6 @@ const MobileAnalysisCard = ({
         </div>
       </div>
 
-
       {/* Compact Stats Grid */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-zinc-50 p-3 rounded-lg">
@@ -162,7 +151,6 @@ const MobileAnalysisCard = ({
     </div>
   );
 };
-
 
 // --- DESKTOP ANALYSIS CARD ---
 const DesktopAnalysisCard = ({ 
@@ -190,7 +178,6 @@ const DesktopAnalysisCard = ({
     );
   }
 
-
   const [idx1, idx2] = selectedIndices;
   const entry1 = filteredData[idx1];
   const entry2 = filteredData[idx2];
@@ -202,13 +189,11 @@ const DesktopAnalysisCard = ({
   const ratePerWeek = (weightDiff / daysDiff) * 7;
   const isLoss = ratePerWeek < 0;
 
-
   const formatDate = (date: Date) => date.toLocaleDateString('en-US', { 
     month: 'short', 
     day: 'numeric', 
     year: 'numeric' 
   });
-
 
   const StatDisplay = ({ label, value, unit }: { label: string; value: string; unit: string }) => (
     <div>
@@ -218,7 +203,6 @@ const DesktopAnalysisCard = ({
       </p>
     </div>
   );
-
 
   return (
     <div className="lg:col-span-1 bg-white border border-zinc-200 rounded-xl shadow-sm h-[30rem] flex flex-col">
@@ -250,7 +234,6 @@ const DesktopAnalysisCard = ({
   );
 };
 
-
 // --- MOBILE TDEE CARD ---
 const MobileTDEECard = ({ 
   selectedIndices, 
@@ -280,7 +263,6 @@ const MobileTDEECard = ({
     );
   }
 
-
   const [idx1, idx2] = selectedIndices;
   const entry1 = filteredData[idx1];
   const entry2 = filteredData[idx2];
@@ -290,16 +272,13 @@ const MobileTDEECard = ({
   const daysDiff = Math.abs(date2.getTime() - date1.getTime()) / (1000 * 3600 * 24);
   const weightDiff = entry2.weight - entry1.weight;
 
-
   const calculateTDEE = () => {
     const dailyConsumed = parseFloat(caloriesConsumed);
     if (!dailyConsumed || dailyConsumed <= 0) return null;
 
-
     const totalConsumed = dailyConsumed * daysDiff;
     const totalBurned = totalConsumed - (weightDiff * 7700);
     const dailyTDEE = totalBurned / daysDiff;
-
 
     return {
       totalBurned: totalBurned.toFixed(0),
@@ -307,9 +286,7 @@ const MobileTDEECard = ({
     };
   };
 
-
   const result = calculateTDEE();
-
 
   return (
     <div className="bg-white border border-zinc-200 rounded-xl shadow-sm p-5">
@@ -322,7 +299,6 @@ const MobileTDEECard = ({
             Energy balance: ~7,700 cal deficit = 1 kg fat loss. Calculate your daily expenditure based on intake and weight change.
           </p>
         </div>
-
 
         {/* Input */}
         <div>
@@ -337,7 +313,6 @@ const MobileTDEECard = ({
             className="w-full px-4 py-3 text-base border-2 border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-800 focus:border-transparent outline-none"
           />
         </div>
-
 
         {/* Result */}
         {result ? (
@@ -362,7 +337,6 @@ const MobileTDEECard = ({
     </div>
   );
 };
-
 
 // --- DESKTOP TDEE CARD ---
 const DesktopTDEECard = ({ 
@@ -394,7 +368,6 @@ const DesktopTDEECard = ({
     );
   }
 
-
   const [idx1, idx2] = selectedIndices;
   const entry1 = filteredData[idx1];
   const entry2 = filteredData[idx2];
@@ -404,16 +377,13 @@ const DesktopTDEECard = ({
   const daysDiff = Math.abs(date2.getTime() - date1.getTime()) / (1000 * 3600 * 24);
   const weightDiff = entry2.weight - entry1.weight;
 
-
   const calculateTDEE = () => {
     const dailyConsumed = parseFloat(caloriesConsumed);
     if (!dailyConsumed || dailyConsumed <= 0) return null;
 
-
     const totalConsumed = dailyConsumed * daysDiff;
     const totalBurned = totalConsumed - (weightDiff * 7700);
     const dailyTDEE = totalBurned / daysDiff;
-
 
     return {
       totalBurned: totalBurned.toFixed(0),
@@ -421,9 +391,7 @@ const DesktopTDEECard = ({
     };
   };
 
-
   const result = calculateTDEE();
-
 
   return (
     <div className="lg:col-span-3 bg-white border border-zinc-200 rounded-xl shadow-sm p-4">
@@ -450,7 +418,6 @@ const DesktopTDEECard = ({
             </div>
           </div>
 
-
           <div className="flex items-center justify-center">
             {result ? (
               <div className="text-center w-full">
@@ -472,7 +439,6 @@ const DesktopTDEECard = ({
   );
 };
 
-
 // --- MAIN COMPONENT ---
 export default function WeightTrackerPage() {
   const [data, setData] = useState<DiaryEntry[]>([]);
@@ -488,14 +454,12 @@ export default function WeightTrackerPage() {
   const chartInstance = useRef<Chart | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-
   useEffect(() => {
     const checkDevice = () => setIsMobile(window.innerWidth < 768);
     checkDevice();
     window.addEventListener('resize', checkDevice);
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
-
 
   useEffect(() => {
     try {
@@ -509,7 +473,6 @@ export default function WeightTrackerPage() {
       localStorage.removeItem('weightData');
     }
   }, []);
-
 
   useEffect(() => {
     if (data.length === 0) {
@@ -525,7 +488,6 @@ export default function WeightTrackerPage() {
       max: Math.ceil(maxWeight + padding)
     });
   }, [data]);
-
 
   useEffect(() => {
     if (data.length === 0) {
@@ -555,10 +517,8 @@ export default function WeightTrackerPage() {
     setCaloriesConsumed('');
   }, [timePeriod, data]);
 
-
   useEffect(() => {
     if (!chartRef.current || !yAxisRange) return;
-
 
     const ctx = chartRef.current.getContext('2d');
     if (!ctx || filteredData.length === 0) {
@@ -568,7 +528,6 @@ export default function WeightTrackerPage() {
       }
       return;
     }
-
 
     const chartData = filteredData.map(entry => ({ 
       x: parseYYYYMMDD(entry.date).getTime(), 
@@ -584,31 +543,35 @@ export default function WeightTrackerPage() {
       selectedIndices.includes(index) ? selectedRadius : normalRadius
     );
 
-
     const gradient = ctx.createLinearGradient(0, 0, 0, 500);
     gradient.addColorStop(0, 'rgba(24, 24, 27, 0.1)');
     gradient.addColorStop(1, 'rgba(24, 24, 27, 0)');
 
-
     if (chartInstance.current) {
-      const dataset = chartInstance.current.data.datasets[0] as any;
-      dataset.data = chartData;
-      dataset.pointBackgroundColor = pointColors;
-      dataset.pointRadius = pointRadii;
-      chartInstance.current.options.scales.x.ticks.callback = function(value) {
-        const date = new Date(value);
-        if (isMobile) {
+      const dataset = chartInstance.current.data.datasets[0];
+      if (dataset) {
+        dataset.data = chartData;
+        dataset.pointBackgroundColor = pointColors;
+        dataset.pointRadius = pointRadii;
+      }
+      
+      // Safe access to scales with type guards
+      if (chartInstance.current.options.scales?.x?.ticks) {
+        chartInstance.current.options.scales.x.ticks.callback = function(value) {
+          const date = new Date(value as number);
+          if (isMobile) {
             return [
-                date.toLocaleDateString('en-US', { month: 'short' }),
-                date.getFullYear().toString()
+              date.toLocaleDateString('en-US', { month: 'short' }),
+              date.getFullYear().toString()
             ];
-        }
-        return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      };
+          }
+          return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        };
+      }
+      
       chartInstance.current.update('none');
       return;
     }
-
 
     const config: ChartConfiguration<'line'> = {
       type: 'line',
@@ -664,12 +627,12 @@ export default function WeightTrackerPage() {
               maxRotation: isMobile ? 0 : undefined,
               minRotation: isMobile ? 0 : undefined,
               callback: function(value) {
-                const date = new Date(value);
+                const date = new Date(value as number);
                 if (isMobile) {
-                    return [
-                        date.toLocaleDateString('en-US', { month: 'short' }),
-                        date.getFullYear().toString()
-                    ];
+                  return [
+                    date.toLocaleDateString('en-US', { month: 'short' }),
+                    date.getFullYear().toString()
+                  ];
                 }
                 return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
               }
@@ -697,7 +660,6 @@ export default function WeightTrackerPage() {
       }
     };
 
-
     chartInstance.current = new Chart(ctx, config);
     return () => {
       if (chartInstance.current) {
@@ -705,8 +667,8 @@ export default function WeightTrackerPage() {
         chartInstance.current = null;
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredData, yAxisRange, isMobile]);
-
 
   useEffect(() => {
     if (!chartInstance.current || filteredData.length === 0) return;
@@ -720,24 +682,23 @@ export default function WeightTrackerPage() {
       selectedIndices.includes(index) ? selectedRadius : normalRadius
     );
     
-    const dataset = chartInstance.current.data.datasets[0] as any;
-    dataset.pointBackgroundColor = pointColors;
-    dataset.pointRadius = pointRadii;
+    const dataset = chartInstance.current.data.datasets[0];
+    if (dataset) {
+      dataset.pointBackgroundColor = pointColors;
+      dataset.pointRadius = pointRadii;
+    }
     chartInstance.current.update('none');
   }, [selectedIndices, filteredData, isMobile]);
-
 
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
 
     setIsLoading(true);
     try {
       const arrayBuffer = await file.arrayBuffer();
       const sqlite3InitModule = (await import('@sqlite.org/sqlite-wasm')).default;
       const sqlite3 = await sqlite3InitModule();
-
 
       const db = new sqlite3.oo1.DB();
       
@@ -756,20 +717,18 @@ export default function WeightTrackerPage() {
         sqlite3.capi.SQLITE_DESERIALIZE_FREEONCLOSE
       );
 
-
       const results: DiaryEntry[] = [];
       db.exec({
         sql: 'SELECT date, weight FROM diary ORDER BY date ASC',
         rowMode: 'object',
-        callback: (row: any) => {
+        callback: (row: { date: string | number; weight: string | number }) => {
           results.push({
             date: row.date.toString(),
-            weight: parseFloat(row.weight),
+            weight: parseFloat(row.weight.toString()),
           });
         },
       });
       db.close();
-
 
       if (results.length > 0) {
         setData(results);
@@ -786,7 +745,6 @@ export default function WeightTrackerPage() {
     }
   };
 
-
   const handlePointClick = (index: number) => {
     setSelectedIndices(prev => {
       if (prev.length === 1 && prev[0] === index) return [];
@@ -795,17 +753,14 @@ export default function WeightTrackerPage() {
     });
   };
 
-
   const resetData = () => {
     setData([]);
     localStorage.removeItem('weightData');
   };
 
-
   // --- RENDER FUNCTIONS ---
   const renderMobileView = () => {
     const hasData = data.length > 0;
-
 
     return (
       <div className="bg-zinc-50 font-sans text-zinc-800">
@@ -849,7 +804,7 @@ export default function WeightTrackerPage() {
             
             {/* Main content area is now scrollable */}
             <main className="flex-1 overflow-y-auto p-4">
-              {/* Time Period Selector - MOVED TO RIGHT */}
+              {/* Time Period Selector */}
               <div className="mb-4 flex justify-center">
                 <div className="flex items-center gap-1 bg-zinc-200 p-1 rounded-lg">
                   {(['all', '1y', '3m', '1m'] as TimePeriod[]).map(period => (
@@ -884,10 +839,8 @@ export default function WeightTrackerPage() {
     );
   };
 
-
   const renderDesktopView = () => {
     const hasData = data.length > 0;
-
 
     return (
       <div className="min-h-screen bg-zinc-50 font-sans text-zinc-800">
@@ -918,7 +871,6 @@ export default function WeightTrackerPage() {
               </div>
             </header>
 
-
             <div className="mb-6">
               <div className="flex items-center gap-1 bg-zinc-200 p-1 rounded-lg w-fit">
                 {(['all', '1y', '3m', '1m'] as TimePeriod[]).map(period => (
@@ -948,7 +900,6 @@ export default function WeightTrackerPage() {
       </div>
     );
   };
-
 
   return isMobile ? renderMobileView() : renderDesktopView();
 }
