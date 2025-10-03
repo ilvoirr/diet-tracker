@@ -1,6 +1,6 @@
 # Advanced Diet Tracker Visualizer
 
-This is an advanced data visualizer for the [Casual Diet App](https://play.google.com/store/apps/details?id=com.casualdietapp) available on the Play Store and App Store. It provides better statistical visualizations for your weight, weight loss rate, and daily calorie calculations.
+This is an advanced data visualizer for the [Casual Diet App](https://play.google.com/store/apps/details?id=jp.united.app.kanahei.weightapp&hl=en_IN) available on the Play Store and App Store. It provides better statistical visualizations for your weight, weight loss rate, and daily calorie calculations.
 
 ## How to Use
 
@@ -10,7 +10,7 @@ To use this visualizer, you need to export your data from the Casual Diet App:
 2.  Go to **Others** in the main menu.
 3.  Navigate to **Settings**.
 4.  Select **Transfer data to another device**.
-5.  Download the `.db` file to your computer.
+5.  Download the `.db` file to your device.
 6.  Upload the `.db` file into this application to see your advanced stats.
 
 ## Why It's Better
